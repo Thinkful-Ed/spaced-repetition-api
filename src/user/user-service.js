@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs')
 
-const REGEX_UPPER_LOWER_NUMBER_SPECIAL = /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&])[\S]+/
+const REGEX_UPPER_LOWER_NUMBER_SPECIAL = /((?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[-_!@#\$%\^&])[\S]+)|.{11,}/
 
 const UserService = {
   hasUserWithUserName(db, username) {
@@ -18,10 +18,10 @@ const UserService = {
   },
   validatePassword(password) {
     if (password.length < 8) {
-      return 'Password be longer than 8 characters'
+      return 'Password must be at least 8 characters long'
     }
     if (password.length > 72) {
-      return 'Password be less than 72 characters'
+      return 'Password must be no more than 72 characters long'
     }
     if (password.startsWith(' ') || password.endsWith(' ')) {
       return 'Password must not start or end with empty spaces'
