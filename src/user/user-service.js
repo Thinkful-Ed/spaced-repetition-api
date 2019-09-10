@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs')
 
-const REGEX_UPPER_LOWER_NUMBER_SPECIAL = /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&])[\S]+/
+const REGEX_UPPER_LOWER_NUMBER_SPECIAL = /((?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[-_!@#\$%\^&])[\S]+)|.{11,}/
 
 const UserService = {
   hasUserWithUserName(db, username) {
