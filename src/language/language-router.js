@@ -43,11 +43,35 @@ languageRouter
     }
   })
 
-languageRouter
-  .get('/head', async (req, res, next) => {
+// languageRouter
+//   .get('/head', async (req, res, next) => {
     // implement me
-    res.send('implement me!')
+    // res.json('implement me!')
+
+  //   try {
+  //     const resObj = LanguageService.getLanguageHead(req.app.get('db'), 1)
+  //     console.log(resObj)
+
+  //     res.json(resObj)
+  //     next()
+  //   } catch (error) {
+  //     next(error)
+  //   }
+  // })
+  
+  languageRouter
+  .get('/head', async (req, res, next) => {
+   try {
+     const head = await LanguageService.getLanguageHead(
+      req.app.get('db'),
+      1,
+     )
+     res.json(head)
+   } catch (error) {
+     next (error)
+   }
   })
+
 
 languageRouter
   .post('/guess', async (req, res, next) => {
