@@ -59,21 +59,68 @@ languageRouter
   })
 
 
-languageRouter
-  .post('/guess', jsonBodyParser, async (req, res, next) => {
-    // implement me
-    // res.send('implement me!')
+// languageRouter
+//   .post('/guess', jsonBodyParser, async (req, res, next) => {
+    // const correctAnswer = await LanguageService.getLanguageHead(
+    //   req.app.get('db'),
+    //   req.language.head,
+    //  )
 
+  //   try {
+  //     let userAnswer = req.body.guess
+  //     const correctAnswer = await LanguageService.getLanguageHead(
+  //       req.app.get('db'),
+  //       req.language.head,
+  //      )
+  //     console.log(userAnswer)
+
+  //     if(!userAnswer) {
+  //       return res.status(400).json({ error: `Missing 'guess' in request body` })
+  //     }
+
+  //     if(userAnswer !== correctAnswer.translation) {
+  //       return res.status(200).json(correctAnswer)
+  //     } else if(userAnswer === correctAnswer.translation) {
+  //       LanguageService.updateCorrectWord(
+  //         req.app.get('db'),
+  //         correctAnswer.id,
+  //         (correctAnswer.memory_value * 2)
+  //       )
+
+  //       return res.status(200).json(req.language.head)
+  //     }
+
+  //     res.status(204)
+  //   } catch(error) {
+  //     next(error)
+  //   }
+  // })
+
+  languageRouter
+  .post('/guess', jsonBodyParser, async (req, res, next) => {
     try {
       let userAnswer = req.body.guess
-      console.log(userAnswer)
 
       if(!userAnswer) {
         return res.status(400).json({ error: `Missing 'guess' in request body` })
       }
 
-      res.status(204)
+      const head = await LanguageService.getLanguageHead(
+        req.app.get('db'),
+        req.language.head,
+      )
 
+      if(head.translation !== userAnswer) {
+        res.json(head)
+      }
+      if(head.translation === userAnswer) {
+        const correctWord = await LanguageService.updateCorrectWord(
+          req.app.get('db'),
+          head.id,
+          (head.memory_value * 2)
+        )
+        res.json(correctWord)
+      }
     } catch(error) {
       next(error)
     }
