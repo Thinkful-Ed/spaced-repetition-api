@@ -28,13 +28,6 @@ const LanguageService = {
       )
       .where({ language_id })
   },
-  // getLanguageHead(db, word_id) {
-  //   return db
-  //   .from('language')
-  //   .select('*')
-  //   .innerJoin('word', 'language.head', 'word.id')
-  //   .where('language.head', word_id)
-  // },
   getLanguageHead(db, word_id) { 
     return db 
     .from('language') 
