@@ -65,7 +65,13 @@ const LanguageService = {
       .select('*')
       .update('memory_value', doubled_value)
       .where('id', word_id)
-  }
+  },
+  updateTotalScore(db, language_id, newScore) {
+    return db
+    .from('language')
+    .update('total_score', newScore)
+    .where('id', language_id)
+  },
 
   // updateCorrectWord(db, word_id, doubled_value) {
   //   return db

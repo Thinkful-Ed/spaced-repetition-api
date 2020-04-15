@@ -111,16 +111,28 @@ languageRouter
       )
 
       if(head.translation !== userAnswer) {
+        await LanguageService.updateCorrectWord(
+          req.app.get('db'),
+          head.id,
+          (head.memory_value = 1)
+        )
         res.json(head)
       }
+
       if(head.translation === userAnswer) {
         const correctWord = await LanguageService.updateCorrectWord(
           req.app.get('db'),
           head.id,
           (head.memory_value * 2)
         )
+        await LanguageService.updateTotalScore(
+          req.app.get('db'),
+          req.language.id,
+          (req.language.total_score += 1)
+        )
         res.json(correctWord)
       }
+
     } catch(error) {
       next(error)
     }
