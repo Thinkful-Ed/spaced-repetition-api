@@ -111,16 +111,25 @@ languageRouter
       )
 
       if(head.translation !== userAnswer) {
-        await LanguageService.updateCorrectWord(
+        await LanguageService.updateMemoryValue(
           req.app.get('db'),
           head.id,
           (head.memory_value = 1)
+        )
+        await LanguageService.updateIncorrectScore(
+          req.app.get('db'),
+          head.id,
+          (head.wordIncorrectCount += 1)
+        )
+        await LanguageService.updateHead(
+          req.app.get('db'),
+          head
         )
         res.json(head)
       }
 
       if(head.translation === userAnswer) {
-        const correctWord = await LanguageService.updateCorrectWord(
+        const correctWord = await LanguageService.updateMemoryValue(
           req.app.get('db'),
           head.id,
           (head.memory_value * 2)
@@ -130,6 +139,17 @@ languageRouter
           req.language.id,
           (req.language.total_score += 1)
         )
+        await LanguageService.updateCorrectScore(
+          req.app.get('db'),
+          head.id,
+          (head.wordCorrectCount += 1)
+        )
+        await LanguageService.updateHead(
+          req.app.get('db'),
+          head
+        )
+        // insertWordAt(req.app.get('db'), head, head.memory_value)
+
         res.json(correctWord)
       }
 
@@ -138,4 +158,41 @@ languageRouter
     }
   })
 
+  // async function insertWordAt(db, item, memory_value) {
+  //   try {
+  //   if(memory_value === null || memory_value < 0) {
+  //       return item
+  //   }
+  
+  //   const head = await LanguageService.getLanguageHead(
+  //     req.app.get('db'),
+  //     req.language.head,
+  //   )
+  
+  //   let currWord = head
+  //   let prevWord = head
+  //   let count = 0
+  
+  //   while(currWord.next !== null) {
+  //       prevWord = currWord
+  //       currWord = await LanguageService.nextWord(
+  //         db,
+  //         head
+  //       )
+  //       count++
+  
+  //       if(count === position) {
+  //           prevWord.next = item
+  //           item.next = currWord.next
+  //           return
+  //       }
+  //   }
+  // } catch(error) {
+  //   console.log(error)
+  // }
+  // }
+  
+  // give item the value of currWord.next
+
 module.exports = languageRouter
+

@@ -28,20 +28,6 @@ const LanguageService = {
       )
       .where({ language_id })
   },
-  // getLanguageHead(db, word_id) { 
-  //   return db 
-  //   .from('language') 
-  //   .innerJoin('word', 'language.head', 'word.id') 
-  //   .select( 'word.original as nextWord', 
-  //   'language.total_score as totalScore', 
-  //   'word.correct_count as wordCorrectCount', 
-  //   'word.incorrect_count as wordIncorrectCount',
-  //   'word.translation as translation',
-  //   'word.memory_value', 'word.next as nextWordIdValue', 'word.id') 
-  //   .where('language.head', word_id) 
-  //   .first() 
-  // },
-
   getLanguageHead(db, word_id) { 
     return db 
     .from('language') 
@@ -59,7 +45,7 @@ const LanguageService = {
     .where('language.head', word_id) 
     .first() 
   },
-  updateCorrectWord(db, word_id, doubled_value) {
+  updateMemoryValue(db, word_id, doubled_value) {
     return db
       .from('word')
       .select('*')
@@ -72,34 +58,32 @@ const LanguageService = {
     .update('total_score', newScore)
     .where('id', language_id)
   },
-
-  // updateCorrectWord(db, word_id, doubled_value) {
-  //   return db
-  //   .from('word')
-  //   .update('memory_value', doubled_value)
-  //   .where('word.id', word_id)
-  // },
-
-  // updateIncorrectWord(db, word_id, newValue, newNext, newCorrectCount) {
-  //   return db
-  //   .from('language') 
-  //   .innerJoin('word', 'language.head', 'word.id')
-  //   .update({
-  //     next: newNext,
-  //     memory_value: newValue,
-  //     incorrect_count: newCorrectCount
-  //   })
-  //   .where('language.head', word_id)
-  //   .first()
-  // },
-  // updateHead(db, word_id) {
-  //   return db
-  //   .from('language') 
-  //   .innerJoin('word', 'language.head', 'word.id')
-  //   .update('language.head', 'word.next')
-  //   .where('language.head', word_id)
-  // },
-  // updateMemoryValue(db, )
+  updateIncorrectScore(db, word_id, newValue) {
+    return db
+    .from('word')
+    .update('incorrect_count', newValue)
+    .where('id', word_id)
+  },
+  updateCorrectScore(db, word_id, newValue) {
+    return db
+    .from('word')
+    .update('correct_count', newValue)
+    .where('id', word_id)
+  },
+  updateHead(db, word) {
+    return db
+    .from('language') 
+    .innerJoin('word', 'language.head', 'word.id')
+    .update('head', word.next)
+    .where('language.head', word.id)
+  },
+  nextWord(db, word) {
+    return db
+      .from('word')
+      .select('*')
+      .where('word.id', word.next)
+      .first()  
+  },
 
 }
 
