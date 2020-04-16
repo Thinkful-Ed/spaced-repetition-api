@@ -45,6 +45,13 @@ const LanguageService = {
     .where('language.head', word_id) 
     .first() 
   },
+  nextWord(db, word) {
+    return db
+      .from('word')
+      .select('*')
+      .where('word.id', word.next)
+      .first()
+  },
   updateMemoryValue(db, word_id, doubled_value) {
     return db
       .from('word')
@@ -77,14 +84,22 @@ const LanguageService = {
     .update('head', word.next)
     .where('language.head', word.id)
   },
-  nextWord(db, word) {
+  updateNextValue(db, word, nextWord) {
+    if (nextWord.next === null) {
+      return db
+      .from('word')
+      .update({
+        next: null
+      })
+      .where('word.id', word.id)
+    }
     return db
       .from('word')
-      .select('*')
-      .where('word.id', word.next)
-      .first()  
-  },
-
+      .update({
+        next: nextWord.id
+      })
+      .where('word.id', word.id)
+  }
 }
 
 module.exports = LanguageService

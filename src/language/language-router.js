@@ -59,47 +59,11 @@ languageRouter
   })
 
 
-// languageRouter
-//   .post('/guess', jsonBodyParser, async (req, res, next) => {
-    // const correctAnswer = await LanguageService.getLanguageHead(
-    //   req.app.get('db'),
-    //   req.language.head,
-    //  )
-
-  //   try {
-  //     let userAnswer = req.body.guess
-  //     const correctAnswer = await LanguageService.getLanguageHead(
-  //       req.app.get('db'),
-  //       req.language.head,
-  //      )
-  //     console.log(userAnswer)
-
-  //     if(!userAnswer) {
-  //       return res.status(400).json({ error: `Missing 'guess' in request body` })
-  //     }
-
-  //     if(userAnswer !== correctAnswer.translation) {
-  //       return res.status(200).json(correctAnswer)
-  //     } else if(userAnswer === correctAnswer.translation) {
-  //       LanguageService.updateCorrectWord(
-  //         req.app.get('db'),
-  //         correctAnswer.id,
-  //         (correctAnswer.memory_value * 2)
-  //       )
-
-  //       return res.status(200).json(req.language.head)
-  //     }
-
-  //     res.status(204)
-  //   } catch(error) {
-  //     next(error)
-  //   }
-  // })
-
   languageRouter
   .post('/guess', jsonBodyParser, async (req, res, next) => {
     try {
       let userAnswer = req.body.guess
+      let isCorrect
 
       if(!userAnswer) {
         return res.status(400).json({ error: `Missing 'guess' in request body` })
@@ -111,25 +75,64 @@ languageRouter
       )
 
       if(head.translation !== userAnswer) {
+        isCorrect = false
+
         await LanguageService.updateMemoryValue(
           req.app.get('db'),
           head.id,
           (head.memory_value = 1)
         )
+
         await LanguageService.updateIncorrectScore(
           req.app.get('db'),
           head.id,
           (head.wordIncorrectCount += 1)
         )
+
         await LanguageService.updateHead(
           req.app.get('db'),
           head
         )
-        res.json(head)
+
+        let next = await LanguageService.nextWord(
+          req.app.get('db'),
+          head
+        )
+
+        let updateWord = await findMSpacesBack(
+          req.app.get('db'), 
+          head, 
+          head.memory_value)
+
+        await LanguageService.updateNextValue(
+          req.app.get('db'), 
+          head, 
+          updateWord)
+
+        let foundWordUpdate = await findMSpacesBack(
+          req.app.get('db'), 
+          head, 
+          head.memory_value - 1)
+
+        await LanguageService.updateNextValue(
+          req.app.get('db'), 
+          foundWordUpdate, 
+          head)
+
+        res.status(200).json({
+          nextWord: next.original,
+          totalScore: head.totalScore,
+          wordCorrectCount: head.wordCorrectCount,
+          wordIncorrectCount: head.wordIncorrectCount,
+          answer: head.translation,
+          isCorrect: isCorrect
+        })
       }
 
       if(head.translation === userAnswer) {
-        const correctWord = await LanguageService.updateMemoryValue(
+        isCorrect = true
+
+        await LanguageService.updateMemoryValue(
           req.app.get('db'),
           head.id,
           (head.memory_value * 2)
@@ -148,9 +151,42 @@ languageRouter
           req.app.get('db'),
           head
         )
-        // insertWordAt(req.app.get('db'), head, head.memory_value)
+        
+        // added
+        let next = await LanguageService.nextWord(
+          req.app.get('db'),
+          head
+        )
 
-        res.json(correctWord)
+        let updateWord = await findMSpacesBack(
+          req.app.get('db'), 
+          head, 
+          head.memory_value)
+
+        await LanguageService.updateNextValue(
+          req.app.get('db'), 
+          head, 
+          updateWord)
+
+        let foundWordUpdate = await findMSpacesBack(
+          req.app.get('db'), 
+          head, 
+          head.memory_value - 1)
+
+        await LanguageService.updateNextValue(
+          req.app.get('db'), 
+          foundWordUpdate, 
+          head)
+
+        
+        res.status(200).json({
+          nextWord: next.original,
+          totalScore: head.totalScore,
+          wordCorrectCount: head.wordCorrectCount,
+          wordIncorrectCount: head.wordIncorrectCount,
+          answer: head.translation,
+          isCorrect: isCorrect
+        })
       }
 
     } catch(error) {
@@ -158,41 +194,28 @@ languageRouter
     }
   })
 
-  // async function insertWordAt(db, item, memory_value) {
-  //   try {
-  //   if(memory_value === null || memory_value < 0) {
-  //       return item
+  async function findMSpacesBack(db, head, memory_value) {
+    if(memory_value < 0 || head.next === null) {
+      return head
+    }
+    let num = memory_value - 1;
+    let nextWord = await LanguageService.nextWord(db, head)
+    return await findMSpacesBack(db, nextWord, num)
+  }
+
+  // async function findMSpacesBack (db, head, memory_value) {
+  //   if(memory_value < 0 || head.next === null) {
+  //     return head
   //   }
-  
-  //   const head = await LanguageService.getLanguageHead(
-  //     req.app.get('db'),
-  //     req.language.head,
-  //   )
-  
-  //   let currWord = head
-  //   let prevWord = head
-  //   let count = 0
-  
-  //   while(currWord.next !== null) {
-  //       prevWord = currWord
-  //       currWord = await LanguageService.nextWord(
-  //         db,
-  //         head
-  //       )
-  //       count++
-  
-  //       if(count === position) {
-  //           prevWord.next = item
-  //           item.next = currWord.next
-  //           return
-  //       }
+
+  //   let start = memory_value - 1
+  //   let nextWord = await LanguageService.nextWord(db, head)
+
+  //   for(let i=0; i < start; start--) {
+
   //   }
-  // } catch(error) {
-  //   console.log(error)
   // }
-  // }
-  
-  // give item the value of currWord.next
+
 
 module.exports = languageRouter
 
