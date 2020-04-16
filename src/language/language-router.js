@@ -121,7 +121,7 @@ languageRouter
 
         res.status(200).json({
           nextWord: next.original,
-          totalScore: head.totalScore,
+          totalScore: req.language.total_score,
           wordCorrectCount: head.wordCorrectCount,
           wordIncorrectCount: head.wordIncorrectCount,
           answer: head.translation,
@@ -176,12 +176,12 @@ languageRouter
         await LanguageService.updateNextValue(
           req.app.get('db'), 
           foundWordUpdate, 
-          head)
+          head
+          )
 
-        
         res.status(200).json({
           nextWord: next.original,
-          totalScore: head.totalScore,
+          totalScore: req.language.total_score,
           wordCorrectCount: head.wordCorrectCount,
           wordIncorrectCount: head.wordIncorrectCount,
           answer: head.translation,
