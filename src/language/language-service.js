@@ -55,9 +55,8 @@ const LanguageService = {
   updateMemoryValue(db, word_id, doubled_value) {
     return db
       .from('word')
-      .select('*')
       .update('memory_value', doubled_value)
-      .where('id', word_id)
+      .where('word.id', word_id)
   },
   updateTotalScore(db, language_id, newScore) {
     return db

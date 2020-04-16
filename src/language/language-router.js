@@ -52,7 +52,12 @@ languageRouter
       req.app.get('db'),
       req.language.head,
      )
-     res.json(head)
+     res.status(200).json({
+       nextWord: head.nextWord,
+       totalScore: head.totalScore,
+       wordCorrectCount: head.wordCorrectCount,
+       wordIncorrectCount: head.wordIncorrectCount
+     })
    } catch (error) {
      next (error)
    }
@@ -74,7 +79,7 @@ languageRouter
         req.language.head,
       )
 
-      if(head.translation !== userAnswer) {
+        if(head.translation !== userAnswer) {
         isCorrect = false
 
         await LanguageService.updateMemoryValue(
@@ -129,13 +134,13 @@ languageRouter
         })
       }
 
-      if(head.translation === userAnswer) {
+        if(head.translation === userAnswer) {
         isCorrect = true
 
         await LanguageService.updateMemoryValue(
           req.app.get('db'),
           head.id,
-          (head.memory_value * 2)
+          (head.memory_value *= 2)
         )
         await LanguageService.updateTotalScore(
           req.app.get('db'),
@@ -152,7 +157,6 @@ languageRouter
           head
         )
         
-        // added
         let next = await LanguageService.nextWord(
           req.app.get('db'),
           head
@@ -202,20 +206,6 @@ languageRouter
     let nextWord = await LanguageService.nextWord(db, head)
     return await findMSpacesBack(db, nextWord, num)
   }
-
-  // async function findMSpacesBack (db, head, memory_value) {
-  //   if(memory_value < 0 || head.next === null) {
-  //     return head
-  //   }
-
-  //   let start = memory_value - 1
-  //   let nextWord = await LanguageService.nextWord(db, head)
-
-  //   for(let i=0; i < start; start--) {
-
-  //   }
-  // }
-
 
 module.exports = languageRouter
 
