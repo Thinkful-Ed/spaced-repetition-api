@@ -79,7 +79,7 @@ languageRouter
         req.language.head,
       )
 
-      if(head.translation !== userAnswer) {
+      if(head.translation.toLowerCase() !== userAnswer.toLowerCase()) {
         isCorrect = false
 
         await LanguageService.updateMemoryValue(
@@ -138,7 +138,7 @@ languageRouter
         })
       }
 
-      if(head.translation === userAnswer) {
+      if(head.translation.toLowerCase() === userAnswer.toLowerCase()) {
         isCorrect = true
 
         await LanguageService.updateMemoryValue(
