@@ -79,7 +79,7 @@ languageRouter
         req.language.head,
       )
 
-        if(head.translation !== userAnswer) {
+      if(head.translation !== userAnswer) {
         isCorrect = false
 
         await LanguageService.updateMemoryValue(
@@ -94,35 +94,39 @@ languageRouter
           (head.wordIncorrectCount += 1)
         )
 
+        let newNext = await findWordToMoveTo(
+          req.app.get('db'), 
+          head, 
+          head.memory_value
+        )
+
+        await LanguageService.updateNextValue(
+          req.app.get('db'), 
+          head, 
+          newNext
+        )
+
+        let beforeWord = await findWordToMoveTo(
+          req.app.get('db'), 
+          head, 
+          head.memory_value - 1
+        )
+
+        await LanguageService.updateNextValue(
+          req.app.get('db'), 
+          beforeWord, 
+          head
+        )
+
         await LanguageService.updateHead(
           req.app.get('db'),
           head
         )
-
+  
         let next = await LanguageService.nextWord(
           req.app.get('db'),
           head
         )
-
-        let updateWord = await findMSpacesBack(
-          req.app.get('db'), 
-          head, 
-          head.memory_value)
-
-        await LanguageService.updateNextValue(
-          req.app.get('db'), 
-          head, 
-          updateWord)
-
-        let foundWordUpdate = await findMSpacesBack(
-          req.app.get('db'), 
-          head, 
-          head.memory_value - 1)
-
-        await LanguageService.updateNextValue(
-          req.app.get('db'), 
-          foundWordUpdate, 
-          head)
 
         res.status(200).json({
           nextWord: next.original,
@@ -134,7 +138,7 @@ languageRouter
         })
       }
 
-        if(head.translation === userAnswer) {
+      if(head.translation === userAnswer) {
         isCorrect = true
 
         await LanguageService.updateMemoryValue(
@@ -147,41 +151,46 @@ languageRouter
           req.language.id,
           (req.language.total_score += 1)
         )
+
         await LanguageService.updateCorrectScore(
           req.app.get('db'),
           head.id,
           (head.wordCorrectCount += 1)
         )
+
+        let newNext = await findWordToMoveTo(
+          req.app.get('db'), 
+          head, 
+          head.memory_value
+        )
+
+        await LanguageService.updateNextValue(
+          req.app.get('db'), 
+          head, 
+          newNext
+        )
+
+        let beforeWord = await findWordToMoveTo(
+          req.app.get('db'), 
+          head, 
+          head.memory_value - 1
+        )
+
+        await LanguageService.updateNextValue(
+          req.app.get('db'), 
+          beforeWord, 
+          head
+        )
+
         await LanguageService.updateHead(
           req.app.get('db'),
           head
         )
-        
+          
         let next = await LanguageService.nextWord(
           req.app.get('db'),
           head
         )
-
-        let updateWord = await findMSpacesBack(
-          req.app.get('db'), 
-          head, 
-          head.memory_value)
-
-        await LanguageService.updateNextValue(
-          req.app.get('db'), 
-          head, 
-          updateWord)
-
-        let foundWordUpdate = await findMSpacesBack(
-          req.app.get('db'), 
-          head, 
-          head.memory_value - 1)
-
-        await LanguageService.updateNextValue(
-          req.app.get('db'), 
-          foundWordUpdate, 
-          head
-          )
 
         res.status(200).json({
           nextWord: next.original,
@@ -198,13 +207,13 @@ languageRouter
     }
   })
 
-  async function findMSpacesBack(db, head, memory_value) {
-    if(memory_value < 0 || head.next === null) {
-      return head
+  async function findWordToMoveTo(db, currentWord, memory_value) {
+    if(memory_value < 0 || currentWord.next === null) {
+      return currentWord
     }
     let num = memory_value - 1;
-    let nextWord = await LanguageService.nextWord(db, head)
-    return await findMSpacesBack(db, nextWord, num)
+    let nextWord = await LanguageService.nextWord(db, currentWord)
+    return await findWordToMoveTo(db, nextWord, num)
   }
 
 module.exports = languageRouter
