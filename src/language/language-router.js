@@ -34,7 +34,7 @@ languageRouter
         req.language.id,
       )
 
-      res.json({
+      res.status(200).json({
         language: req.language,
         words,
       })
