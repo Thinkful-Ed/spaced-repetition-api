@@ -67,7 +67,7 @@ languageRouter
   languageRouter
   .post('/guess', jsonBodyParser, async (req, res, next) => {
     try {
-      let userAnswer = req.body.guess
+      let userAnswer = req.body.guess.trim()
       let isCorrect
 
       if(!userAnswer) {
