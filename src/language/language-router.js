@@ -55,6 +55,12 @@ languageRouter
       req.language.id
     )
     const userWord = userWords[0]
+    console.log({
+      nextWord: userWord.original,
+      totalScore: userLanguage.total_score,
+      wordCorrectCount: userWord.correct_count ,
+      wordIncorrectCount: userWord.incorrect_count,
+    })
     res.send({
       nextWord: userWord.original,
       totalScore: userLanguage.total_score,
