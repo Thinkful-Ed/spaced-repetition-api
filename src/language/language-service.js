@@ -1,3 +1,5 @@
+const { head } = require("../app")
+
 const LanguageService = {
   getUsersLanguage(db, user_id) {
     return db
@@ -28,6 +30,34 @@ const LanguageService = {
       )
       .where({ language_id })
   },
+  updateHead(db, id, language_id) {
+    return db
+      .from('language')
+      .where({ id: language_id })
+      .update({ head: id })
+  },
+  // getFirstWord(db, language_id) {
+  //   return db
+  //     .from('word')
+  //     .join('language', 'language.head', 'word.id')
+  //     .where({ 'language.id': language_id })
+  //     .select('*')
+  //     .first()
+  // },
+  getWord(db, id) {
+    return db
+      .from('word')
+      .select('*')
+      .where({ id })
+      .then(rows => {
+        return rows[0];
+      })
+  },
+  updateWord(db, id, newData) {
+    return db('word')
+      .where({ id })
+      .update(newData)
+  }
 }
 
 module.exports = LanguageService
