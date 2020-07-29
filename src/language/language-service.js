@@ -36,14 +36,6 @@ const LanguageService = {
       .where({ id: language_id })
       .update({ head: id })
   },
-  // getFirstWord(db, language_id) {
-  //   return db
-  //     .from('word')
-  //     .join('language', 'language.head', 'word.id')
-  //     .where({ 'language.id': language_id })
-  //     .select('*')
-  //     .first()
-  // },
   getWord(db, id) {
     return db
       .from('word')
@@ -53,10 +45,15 @@ const LanguageService = {
         return rows[0];
       })
   },
-  updateWord(db, id, newData) {
+  updateWord(db, id, data) {
     return db('word')
       .where({ id })
-      .update(newData)
+      .update(data)
+  },
+  updateLanguage(db, user_id, data) {
+    return db('language')
+      .where('language.user_id', user_id)
+      .update(data)
   }
 }
 
