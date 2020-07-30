@@ -14,7 +14,6 @@ const LanguageService = {
       .where('language.user_id', user_id)
       .first()
   },
-
   getLanguageWords(db, language_id) {
     return db
       .from('word')
@@ -30,7 +29,7 @@ const LanguageService = {
       )
       .where({ language_id })
   },
-  updateHead(db, id, language_id) {
+  updateHead(db, language_id, id) {
     return db
       .from('language')
       .where({ id: language_id })

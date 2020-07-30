@@ -48,22 +48,12 @@ languageRouter
 languageRouter
   .get('/head', async (req, res, next) => {
     try {
-      const userLanguage = await LanguageService.getUsersLanguage(
-        req.app.get('db'),
-        req.language.id
-      )
-      const userWords = await LanguageService.getLanguageWords(
-        req.app.get('db'),
-        req.language.id
-      )
-
-      const userWord = userWords[0]
-
+      const userLanguage = req.language
       const head = await LanguageService.getWord(
         req.app.get('db'),
         userLanguage.head
       )
-      console.log(head.memory_value)
+      // sends the total score and information on the current head
       res.send({
         nextWord: head.original,
         totalScore: userLanguage.total_score,
@@ -80,20 +70,14 @@ languageRouter
   .post('/guess', jsonBodyParser, async (req, res, next) => {
     try {
       const { guess } = req.body
-
+      // Verifys that guess in included in the request body and sends 400 if not. Set up to be expandable if needed
       for (const field of ['guess'])
         if (!req.body[field])
           return res.status(400).json({
             error: `Missing '${field}' in request body`
           })
-      let userLanguage = await LanguageService.getUsersLanguage(
-        req.app.get('db'),
-        req.language.id
-      )
-      let userWords = await LanguageService.getLanguageWords(
-        req.app.get('db'),
-        req.language.id
-      )
+      // initialize variables to modify during update algorithm
+      let userLanguage = req.language
       let head = await LanguageService.getWord(
         req.app.get('db'),
         userLanguage.head
@@ -109,32 +93,33 @@ languageRouter
       let memVal = head.memory_value
       let currentWord = head
 
-      if (head.translation != guess) {
+      // If incorrect we want the mem value to reset to one so we see it sooner. Otherwise we want to double it so it moves further down the line 
+      if (head.translation.toLowerCase() != guess.toLowerCase()) {
         incorrect_count++
-        memVal = 1
-        // Update the head.next to point at the head. Should only happen if the guess is incorrect
-        await LanguageService.updateWord(
-          req.app.get('db'),
-          nextWord.id,
-          {
-            next: head.id
-          }
-        )
-      } else if (head.translation = guess) {
+        memVal = 1        
+      } else {
         isCorrect = true
         correct_count++
         total_score++
         memVal = memVal * 2
       }
-      for (let i = 0; i < head.memVal; i++) {
-        
+      // Loops through the words to move the head forward a number of places equal to mem value
+      for (let i = 0; i < memVal && currentWord.next != null; i++) {
         currentWord = await LanguageService.getWord(
-            req.app.get('db'),
-            currentWord.next
-          )
+          req.app.get('db'),
+          currentWord.next
+        )
+
       }
-      // console.log(memVal)
-      // Update the head values and point it forward m place. Wont update memory_value
+      // set the next value of the word before the new position of the answered question. This is one step of moving the head to a new position
+      await LanguageService.updateWord(
+        req.app.get('db'),
+        currentWord.id,
+        {
+          next: head.id
+        }
+      )
+      // Update the head values and point it forward m place. The is the second step in moving the position of the head
       await LanguageService.updateWord(
         req.app.get('db'),
         head.id,
@@ -145,24 +130,21 @@ languageRouter
           next: currentWord.next
         }
       )
-      // Updates the head.next to be the new head 
+      // Updates the next word in line to be the new head when the head moves
       await LanguageService.updateHead(
         req.app.get('db'),
-        nextWord.id,
-        req.language.id
+        userLanguage.id,
+        nextWord.id
       )
       // Update the total score for the language
       await LanguageService.updateLanguage(
         req.app.get('db'),
-        req.language.id,
-        { 
+        userLanguage.id,
+        {
           total_score: total_score,
-          head: head.next
         }
       )
 
-      // console.log(head.memory_value)
-      // console.log(userLanguage)
       res.send({
         nextWord: nextWord.original,
         totalScore: total_score,
